@@ -73,6 +73,9 @@ def print_board(board):
         if (row + 1) % 3 == 0:
             print()
             
-
+print("Unsolved board:")
 print_board(unsolved_board)
+print()
+
+print("Solved board:")
 print_board(solved_board)
