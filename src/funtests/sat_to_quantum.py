@@ -8,6 +8,8 @@ from z3 import *
 
 import numpy as np
 
+# SPYDER
+
 def generate_circuit_for_arbitrary_bitstring():
     bitstring = [0,1,0,0,1,1,1,1,0]
     circ = qiskit.QuantumCircuit(2*len(bitstring)-sum(bitstring)+1, len(bitstring)+1)
@@ -59,11 +61,19 @@ def diffuser(nqubits):
 # Maybe we can increase the probability of measuring the correct outcome.
 # Maybe there's also a way to optimize the circuit once it's made.
 
-a, b, c = Bools('a b c')
+vars = ['a', 'b', 'c']
+nvars = len(vars)
+a, b, c = Bools(' '.join(vars))
 
 # Expression: "(a & !b) | (b & c) | (a & b & c)"
 # expression = Or(And(a, Not(b)), And(b, c), And(a, b, c))
-expression = Or(Not(a), And(a, b, c))
+# expression = Or(And(Not(a), Not(b)), And(a, b, c))
+
+# At least one
+# At most one
+expression = And(Or(a, b, c), Not(And(a, b)), Not(And(a, c)), Not(And(b, c)))
+
+# We can estimate how dense the solution space is through Deutsch-Jocza
 
 # These are the only values we need:
 # print(expression)
@@ -101,8 +111,6 @@ def build_circuit(expression, expression_to_qubit: dict):
     
     return spec, out_qubit
 
-vars = ['a', 'b', 'c']
-
 spec, out_qubit = build_circuit(expression, {vars[i]: i for i in range(len(vars))})
 oracle = qiskit.QuantumCircuit(out_qubit + 1)
 # Include uncomputation
@@ -110,7 +118,7 @@ for cmd, *args in [*spec, *spec[:-1][::-1]]:
     getattr(oracle, cmd)(*args)
 
 # COOL! https://qiskit.org/textbook/ch-algorithms/grover.html#5.-Solving-Sudoku-using-Grover's-Algorithm-
-circ = qiskit.QuantumCircuit(out_qubit + 1, 3)
+circ = qiskit.QuantumCircuit(out_qubit + 1, len(vars))
 
 # Initialize 'out0' in state |->
 circ.initialize([1, -1]/np.sqrt(2), out_qubit)
@@ -125,10 +133,10 @@ print(oracle)
 
 # Run oracle
 circ.append(oracle, [*range(out_qubit + 1)])
-circ.append(diffuser(3), [0,1,2])
+circ.append(diffuser(len(vars)), [*range(len(vars))])
 
-circ.append(oracle, [*range(out_qubit + 1)])
-circ.append(diffuser(3), [0,1,2])
+# circ.append(oracle, [*range(out_qubit + 1)])
+# circ.append(diffuser(3), [0,1,2])
 
 print(circ)
 
