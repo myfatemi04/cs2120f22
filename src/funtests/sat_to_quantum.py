@@ -1,7 +1,7 @@
 import qiskit
 from qiskit import Aer
 from qiskit.tools.visualization import plot_histogram
-from qiskit.circuit.library import AND, OR
+from qiskit.circuit.library import AND, OR, XOR
 import pprint
 
 from z3 import *
@@ -61,17 +61,30 @@ def diffuser(nqubits):
 # Maybe we can increase the probability of measuring the correct outcome.
 # Maybe there's also a way to optimize the circuit once it's made.
 
-vars = ['a', 'b', 'c']
+vars = ['a', 'b', 'c', 'd']
+# vars = ['a0', 'a1', 'b0', 'b1'] # , 'c0', 'c1', 'd0', 'd1']
 nvars = len(vars)
-a, b, c = Bools(' '.join(vars))
+a, b, c, d = Bools(' '.join(vars))
+a0, a1, b0, b1 = symbols = Bools(' '.join(vars))
+# a0, a1, b0, b1, c0, c1, d0, d1 = symbols = Bools(' '.join(vars))
 
 # Expression: "(a & !b) | (b & c) | (a & b & c)"
 # expression = Or(And(a, Not(b)), And(b, c), And(a, b, c))
 # expression = Or(And(Not(a), Not(b)), And(a, b, c))
+expression_2x2 = And(Or(a, b, c, d), Not(Or(
+    And(a, b), And(a, c), And(a, d),
+    And(b, c), And(b, d),
+    And(c, d)
+)))
 
-# At least one
-# At most one
-expression = And(Or(a, b, c), Not(And(a, b)), Not(And(a, c)), Not(And(b, c)))
+expression_4x4_nqueens = Or(
+    Xor(a0, b0), Xor(a1, b1), # Xor(a0, c0), Xor(a1, c1), Xor(a0, d0), Xor(a1, d1),
+    # Xor(b0, c0), Xor(b1, c1), Xor(b0, d0), Xor(b1, d1),
+    # Xor(c0, d0), Xor(c1, d1),
+)
+
+expression = expression_2x2
+simplify(expression)
 
 # We can estimate how dense the solution space is through Deutsch-Jocza
 
@@ -86,7 +99,7 @@ expression = And(Or(a, b, c), Not(And(a, b)), Not(And(a, c)), Not(And(b, c)))
 def build_circuit(expression, expression_to_qubit: dict):
     # Returns the order of functions to call and the arguments to use.
     # In order to calculate any node, we need to know the values of all its children.
-    if expression.decl().name() not in ['or', 'and', 'not']:
+    if expression.decl().name() not in ['or', 'and', 'not', 'xor']:
         return [], expression_to_qubit[expression.decl().name()]
     
     spec = []
@@ -102,6 +115,10 @@ def build_circuit(expression, expression_to_qubit: dict):
         spec.append(('append', OR(len(child_qubits)), [*child_qubits, out_qubit]))
     elif expression.decl().name() == 'and':
         spec.append(('append', AND(len(child_qubits)), [*child_qubits, out_qubit]))
+    elif expression.decl().name() == 'xor':
+        assert len(child_qubits) == 2
+        spec.append(('cnot', child_qubits[1], out_qubit))
+        spec.append(('append', XOR(len(child_qubits)), [child_qubits[0], out_qubit]))
     elif expression.decl().name() == 'not':
         assert len(child_qubits) == 1
         spec.append(('cnot', child_qubits[0], out_qubit))
@@ -115,6 +132,7 @@ spec, out_qubit = build_circuit(expression, {vars[i]: i for i in range(len(vars)
 oracle = qiskit.QuantumCircuit(out_qubit + 1)
 # Include uncomputation
 for cmd, *args in [*spec, *spec[:-1][::-1]]:
+    print(cmd, args)
     getattr(oracle, cmd)(*args)
 
 # COOL! https://qiskit.org/textbook/ch-algorithms/grover.html#5.-Solving-Sudoku-using-Grover's-Algorithm-
@@ -159,7 +177,7 @@ for i in range(len(vars)):
     circ.measure(i, i)
 
 # Run and get counts
-simulator = Aer.get_backend('aer_simulator')
+simulator = Aer.get_backend('statevector_simulator')
 circ = qiskit.transpile(circ, simulator)
 result = simulator.run(circ, shots=256).result()
 counts = result.get_counts(circ)
@@ -182,7 +200,7 @@ while solver.check() == z3.sat:
         solution = f"Or(({i} != {m[i]}), {solution})"
     f2 = eval(solution)
     solver.add(f2)
-    print({'a': m[a], 'b': m[b], 'c': m[c]})
+    print({varname: m[symbol] for varname, symbol in zip(vars, symbols)})
     
 # Top: 100, 110, 010, 000
 
