@@ -2,6 +2,7 @@ import qiskit
 from qiskit import Aer
 from qiskit.tools.visualization import plot_histogram
 from qiskit.circuit.library import AND, OR
+import pprint
 
 from z3 import *
 
@@ -61,8 +62,8 @@ def diffuser(nqubits):
 a, b, c = Bools('a b c')
 
 # Expression: "(a & !b) | (b & c) | (a & b & c)"
-expression = Or(And(a, Not(b)), And(b, c), And(a, b, c))
-# expression = Or(And(b, c), And(a, b, c))
+# expression = Or(And(a, Not(b)), And(b, c), And(a, b, c))
+expression = Or(Not(a), And(a, b, c))
 
 # These are the only values we need:
 # print(expression)
@@ -104,8 +105,8 @@ vars = ['a', 'b', 'c']
 
 spec, out_qubit = build_circuit(expression, {vars[i]: i for i in range(len(vars))})
 oracle = qiskit.QuantumCircuit(out_qubit + 1)
-for cmd, *args in [*spec, *spec[:-1]]:
-    # Includes uncomputation
+# Include uncomputation
+for cmd, *args in [*spec, *spec[:-1][::-1]]:
     getattr(oracle, cmd)(*args)
 
 # COOL! https://qiskit.org/textbook/ch-algorithms/grover.html#5.-Solving-Sudoku-using-Grover's-Algorithm-
@@ -124,13 +125,10 @@ print(oracle)
 
 # Run oracle
 circ.append(oracle, [*range(out_qubit + 1)])
-# circ.append(diffuser(3), [0,1,2])
+circ.append(diffuser(3), [0,1,2])
 
-# circ.append(oracle, [*range(out_qubit + 1)])
-# circ.append(diffuser(3), [0,1,2])
-
-# for i in range(len(vars)):
-#     circ.measure(i, i)
+circ.append(oracle, [*range(out_qubit + 1)])
+circ.append(diffuser(3), [0,1,2])
 
 print(circ)
 
@@ -142,13 +140,20 @@ print(circ)
 simulator = Aer.get_backend('statevector_simulator')
 circ = qiskit.transpile(circ, simulator)
 
-# Run and get counts
+# Statevector debugging
 result = simulator.run(circ, shots=1).result()
 sv = result.get_statevector()
 sva = np.array(sv).reshape(sv.dims())
-print(sv.to_dict())
-# print(sva.shape)
-exit()
+pprint.pprint(sv.to_dict())
+
+# After statevector
+for i in range(len(vars)):
+    circ.measure(i, i)
+
+# Run and get counts
+simulator = Aer.get_backend('aer_simulator')
+circ = qiskit.transpile(circ, simulator)
+result = simulator.run(circ, shots=256).result()
 counts = result.get_counts(circ)
 plot_histogram(counts, title='Bell-State counts')
 
