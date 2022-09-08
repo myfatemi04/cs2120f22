@@ -1,11 +1,19 @@
 from z3 import *
 
 
-def isValid(P):
-    s = Solver()
-    s.add(Not(P))  # replace True with required declarative spec
-    return (s.check() == unsat)
+x, y, z = Reals('x y z')
 
+s = Solver()
+
+C = And(
+        3*x + 2*y - z == 1,
+        2*x + 2*y + 4*z == -2,
+        -x + 0.5*y - z == 0)
+
+s.add(C)
+
+if (s.check() == sat) :
+    print(s.model())
 
 
 # Declare X to be a Z3 Bool variable
