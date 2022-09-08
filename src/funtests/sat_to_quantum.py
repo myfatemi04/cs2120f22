@@ -64,26 +64,26 @@ def diffuser(nqubits):
 vars = ['a', 'b', 'c', 'd']
 # vars = ['a0', 'a1', 'b0', 'b1'] # , 'c0', 'c1', 'd0', 'd1']
 nvars = len(vars)
-a, b, c, d = Bools(' '.join(vars))
-a0, a1, b0, b1 = symbols = Bools(' '.join(vars))
+a, b, c, d = symbols = Bools(' '.join(vars))
+# a0, a1, b0, b1 = symbols = Bools(' '.join(vars))
 # a0, a1, b0, b1, c0, c1, d0, d1 = symbols = Bools(' '.join(vars))
 
 # Expression: "(a & !b) | (b & c) | (a & b & c)"
 # expression = Or(And(a, Not(b)), And(b, c), And(a, b, c))
-# expression = Or(And(Not(a), Not(b)), And(a, b, c))
+expression = Or(And(Not(a), Not(b)), And(a, b, c))
 expression_2x2 = And(Or(a, b, c, d), Not(Or(
     And(a, b), And(a, c), And(a, d),
     And(b, c), And(b, d),
     And(c, d)
 )))
 
-expression_4x4_nqueens = Or(
-    Xor(a0, b0), Xor(a1, b1), # Xor(a0, c0), Xor(a1, c1), Xor(a0, d0), Xor(a1, d1),
-    # Xor(b0, c0), Xor(b1, c1), Xor(b0, d0), Xor(b1, d1),
-    # Xor(c0, d0), Xor(c1, d1),
-)
+# expression_4x4_nqueens = Or(
+#     Xor(a0, b0), Xor(a1, b1), # Xor(a0, c0), Xor(a1, c1), Xor(a0, d0), Xor(a1, d1),
+#     # Xor(b0, c0), Xor(b1, c1), Xor(b0, d0), Xor(b1, d1),
+#     # Xor(c0, d0), Xor(c1, d1),
+# )
 
-expression = expression_2x2
+# expression = expression_2x2
 simplify(expression)
 
 # We can estimate how dense the solution space is through Deutsch-Jocza
@@ -154,9 +154,7 @@ circ.append(oracle, [*range(out_qubit + 1)])
 circ.append(diffuser(len(vars)), [*range(len(vars))])
 
 # circ.append(oracle, [*range(out_qubit + 1)])
-# circ.append(diffuser(3), [0,1,2])
-
-print(circ)
+# circ.append(diffuser(len(vars)), [*range(len(vars))])
 
 # Iterate through the tree. Create a stack.
 # AND gates can be simulated through Toffoli gates.
@@ -172,6 +170,8 @@ sv = result.get_statevector()
 sva = np.array(sv).reshape(sv.dims())
 pprint.pprint(sv.to_dict())
 
+circ.append(diffuser(len(vars)), [*range(len(vars))])
+
 # After statevector
 for i in range(len(vars)):
     circ.measure(i, i)
@@ -179,7 +179,7 @@ for i in range(len(vars)):
 # Run and get counts
 simulator = Aer.get_backend('statevector_simulator')
 circ = qiskit.transpile(circ, simulator)
-result = simulator.run(circ, shots=256).result()
+result = simulator.run(circ, shots=1024).result()
 counts = result.get_counts(circ)
 plot_histogram(counts, title='Bell-State counts')
 
