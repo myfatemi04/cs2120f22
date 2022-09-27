@@ -372,10 +372,20 @@ and I want to prove (7 is beautiful : true). Prove it.
 Name the inference rule and identify the arguments you
 give it to prove it.
 
+Inference rule: For-all elimination
+
 Constructive logic. Suppose I have a proof, pf, that every 
 natural number is beautiful (∀ (n : ℕ), beautiful n), and I 
 need a proof that 7 is beautiful. How can I get the proof 
 I need? Answer in both English and with a Lean expression.
+
+Let's say we have a proof pf that all natural numbers are beautiful.
+
+In constructive logic, we can do:
+
+pf 7
+----
+Apply generalization that every natural number is beautiful to 7
 
 Formalize this story: All people are mortal, and Plato 
 is a person, therefore Plato is Mortal.
@@ -490,14 +500,27 @@ A little practice. Which of the following propositions
 in predicate logic is true?
 -/
 
-def p1 : Prop := false → false
-def p2 : Prop := false → true
-def p3 : Prop := true → true
-def p4 : Prop := true → false
-def p5 : Prop := false → 2 = 3
-def p6 : Prop := false → 0 = 0
-def p7 : Prop := ∀ (P : Prop), true → P
-def p8 : Prop := ∀ (P : Prop), false → P 
+def p1 : Prop := false → false -- True
+def p2 : Prop := false → true -- True
+def p3 : Prop := true → true -- True
+def p4 : Prop := true → false -- False
+def p5 : Prop := false → 2 = 3 -- True
+def p6 : Prop := false → 0 = 0 -- True
+def p7 : Prop := ∀ (P : Prop), true → P -- False
+def p8 : Prop := ∀ (P : Prop), false → P -- True
+
+theorem p8_is_true: p8 :=
+-- If I want to prove any implication, like X -> Y, how do I start?
+-- We assume that we have a proof of the premise.
+begin
+unfold p8,
+-- Take the first context variable and name it P
+assume P,
+-- Take the second context variable (false) and name it f
+assume f,
+-- Given that we know that False is true, our theorem is true.
+apply false.elim f,
+end
 
 /-
 For each proposition, state whether it's true or false
