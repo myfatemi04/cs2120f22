@@ -500,13 +500,21 @@ A little practice. Which of the following propositions
 in predicate logic is true?
 -/
 
+-- If false is true, then false is true
 def p1 : Prop := false → false -- True
+-- If false is true, then true is true
 def p2 : Prop := false → true -- True
+-- If true is true, then true is true
 def p3 : Prop := true → true -- True
+-- If true is true, then false is true
 def p4 : Prop := true → false -- False
+-- If false is true, then 2 = 3 is true
 def p5 : Prop := false → 2 = 3 -- True
+-- If false is true, then 0 = 0 is true
 def p6 : Prop := false → 0 = 0 -- True
+-- Given any proposition, if true is true, then the proposition is true
 def p7 : Prop := ∀ (P : Prop), true → P -- False
+-- Given any proposition, if false is true, then the proposition is true
 def p8 : Prop := ∀ (P : Prop), false → P -- True
 
 theorem p8_is_true: p8 :=
@@ -540,6 +548,8 @@ begin
 unfold p2,
 assume f,
 apply false.elim f,   -- apply false elim rule!
+-- Or, we could use true.intro
+-- Or, we could use contradiction
 end
 
 example : p3 := 
