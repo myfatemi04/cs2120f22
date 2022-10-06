@@ -18,9 +18,11 @@ there is no such valid inference rule.
 
 If a ball, b, is round *and* b is also red, is b red?
 
-A: yes/no: YES
+A: yes/no: yes
 
-B: Why? and elimination
+B: Why? Because we can apply and elimination on the right. If we
+know that the propositions are true together, then we know that
+they are true individually.
 
 
 #1B
@@ -29,25 +31,32 @@ If flowers make you happy and chocolates make you happy,
 and I give you flowers *or* I give you chocolates, will
 you be happy?
 
-A: yes/no: Yes
+A: yes/no: yes
 
-B: Why? Or elimination
+B: Why? We can apply or elimination. If we know that A -> C
+and B -> C, then we can prove that A or B implies C.
 
 
 #1C: If giraffes are just zebras in disguise, then the 
 moon is made of green cheese?
 
-A. yes/: Yes
+A. yes/no: no
 
-B. Why? False elimination
+B. Why? Because no proof exists for the proposed conclusion,
+the proposed conclusion must be false. We cannot construct
+a proof that the moon is made of green cheese only given
+a proof that giraffes are just zebras in disguise.
 
 
 #1D. If x = y implies that 0 = 1, then is it true that
 x ≠ y?
 
-A. yes/no: Yes
+A. yes/no: yes
 
-B. Why? not introduction, proof by negation
+B. Why? This is based on a proof by contradiction. If we can
+prove "false", and we are sure that "false" has no proofs, then
+whatever proof led us to believe that "false" is "true" must
+be invalid.
 
 
 
@@ -56,7 +65,10 @@ Zoe has stripes.
 
 A. yes/no: yes
 
-B. Why? all elimination, universal specialization
+B. Why? We can use a universal specialization (also known as
+for-all elimination). Because we know that all zebras have stripes,
+then based on the knowledge that Zoe is a zebra, we can conclude
+that Zoe has stripes.
 
 
 #1F. If Z could be *any* Zebra and Z has stripes, then 
@@ -64,16 +76,19 @@ B. Why? all elimination, universal specialization
 
 A. Yes/no: yes
 
-B: Why? all introduction
+B: Why? We can use a universal generalization. Because any
+arbitrary zebra has stripes, it is impossible to select a zebra
+that does not have stripes. Therefore, all zebras have stripes.
 
 
 #1G. If whenever the wind blows, the leaves move, and 
-the leaves are moving, so the wind is blowing.
+the leaves are moving, then the wind is blowing.
 
 A. yes/no: no
 
-B. Why? not valid, someone could be shaking the tree
-(affirming the conclusion)
+B. Why? Not necessarily. This is based on the converse of "implies"
+not necessarily being true. If we only have the knowledge X -> Y, then
+we cannot prove that Y -> X.
 
 
 #1H: If Gina is nice *or* Gina is tall, and Gina is nice,
@@ -82,9 +97,11 @@ the or of predicate logic.)
 
 A. yes/no: no
 
-B. Why? not valid, Gina could be tall and nice 
-(affirming the disjunct)
+B. Why? This is affirming the disjunct. *Or* is not exclusive in
+predicate logic, so both propositions can be true at the same time
+and the "or" operator will still return true.
 -/
+
 
 
 /- 
@@ -96,12 +113,13 @@ logic: X ∨ ¬Y.
 #2A: Is is satisfiable? If so, give a model (a binding of 
 the variables to values that makes the expressions true).
 
-Yes. X = true and Y could be anything
-
+This is satisfied by X = True.
 
 #2B: Is it valid? Explain your answer. 
 
-no: X = false and Y = true is a counterexample
+This is not valid because there is an interpretation that
+makes the proposition false: X = False; Y = True.
+
 -/
 
 
@@ -116,22 +134,25 @@ true if and only if Q is true) then if P is true then Q is
 true.
 -/
 
-#check ∀ (P Q : Prop), P ↔ Q → (P → Q)
+#check ∀ (P Q : Prop), (P ↔ Q) → (P → Q)
+
 
 
 /-
 #4 Translate the following expressions into English.
-The #check command can of course be ignored here. 
+The #check commands are just Lean commands and can
+be ignored here. 
 -/
 
 
 -- A
 #check ∀ (n m : ℕ), n < m → m - n > 0
 
-
 /-
-Answer: If n and m are any two natural numbers, then if 
-n is less than m then the difference, m - n, is positive
+Answer: If n and m are arbitrary natural numbers, and n is less
+than m, then m minus n will be greater than zero.
+
+Or: Subtracting a smaller number from a larger number will be positive.
 -/
 
 -- B
@@ -139,9 +160,10 @@ n is less than m then the difference, m - n, is positive
 #check ∃ (n : ℕ), ∀ (m : nat), m >= n
 
 /-
-Answer: There's some natural number n that is less
-than or equal to every other natural number. (And 
-this is also true, by the way. The number n = 0.)
+Answer: There exists at least one natural number n, such that
+for all natural numbers m, m is greater than n.
+
+Or: There is a smallest natural number.
 -/
 
 
@@ -151,9 +173,7 @@ variables (isEven: ℕ → Prop) (isOdd: ℕ → Prop)
 #check ∀ (n : ℕ), isEven n ∨ isOdd n
 
 /-
-Answer: Every natural number is even or odd (or both).
-(Note however that we haven't really defined what these
-predicates mean here.)
+Answer: Every natural number is either even or odd.
 -/
 
 
@@ -162,12 +182,7 @@ predicates mean here.)
 #check ∀ (P : Prop), P ∨ ¬P
 
 /-
-Answer: Every proposition is true or false. Note: this is
-actually not an axiom/rule in constructive logic, though it
-can be added as a rule without causing inconsistencies. By
-adding it, we convert constructive predicate logic into
-classical (albeit higher-order) predicate logic. We'll talk
-more about this later.
+Answer: Every proposition is either true or not true.
 -/
 
 
@@ -176,7 +191,7 @@ more about this later.
 #check ∀ (P : Prop), ¬(P ∧ ¬P)
 
 /-
-Answer: No proposition can be both true and false.
+Answer: No proposition can be true *and* not true.
 -/
 
 
@@ -203,6 +218,13 @@ variable contagion :
   hasVirus a1 → closeContact a1 a2 → hasVirus a2
 
 /-
-If any animal, a1, has a virus, and a1 comes in contact
-with an animal, a2, then a2 will have (catch) the virus.
+
+We are given two animals, a way to determine if they have a virus,
+and a way to determine if they are in close contact.
+
+If a1 has the virus, and a1 is in close contact with a2, then a2 must
+also have the virus.
+
+If one animal is in close contact with another animal that has the virus,
+then it also has the virus.
 -/
