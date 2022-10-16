@@ -72,9 +72,7 @@ begin
   exact p,                -- now we fill holes 
 end
 
-example: P ↔ Q :=
+example : P ↔ Q :=
 begin
--- Would need iff-intro (proof of P → Q) (proof of Q → P)
-  apply iff.intro,
-  -- ...
-end
+  apply iff.intro _ _,
+end 

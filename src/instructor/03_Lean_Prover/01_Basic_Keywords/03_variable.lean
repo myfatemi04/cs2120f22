@@ -9,6 +9,8 @@ variable seven : ℕ
 variable some_data_type : Type
 variable a_silly_proposition : ∀ (P : Prop), true
 
+-- def a_silly_proposition := begin assume P, exact true.intro end
+
 /-
 You can use #check to check the types of such variables
 -/
@@ -44,3 +46,15 @@ begin
 	unfold even,
 	simp,
 end
+-- Another in-class example
+
+variable even : ℕ → Prop 
+
+#check even 5
+#check even 6
+
+def even (n : ℕ) := n%2 = 0
+
+#check even 5
+
+
