@@ -68,7 +68,7 @@ can use the simpler or.inl p and or.inr q
 constructors. 
 -/
 
-example : P ∨ Q → R :=
+example : P ∨ Q → (P → R) → (Q → R) → R :=
 begin
 assume h,
 cases h with p q,
@@ -94,6 +94,8 @@ convert and proposition, P, into a
 proof of P ∨ ¬P, *on which we can
 then do case analysis*.
 -/
+
+#check @classical.em P
 
 example : ¬¬P → P :=
 begin
