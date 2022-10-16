@@ -100,6 +100,8 @@ begin
 assume nnp,
 cases (classical.em P) with p np, -- here!
 -- make sure you can finish this proof!
+exact p,
+contradiction,
 end
 
 /-

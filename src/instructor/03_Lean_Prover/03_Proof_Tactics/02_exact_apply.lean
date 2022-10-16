@@ -71,3 +71,10 @@ begin
   apply (and.intro _ q),      -- _ _ left out
   exact p,                -- now we fill holes 
 end
+
+example: P ↔ Q :=
+begin
+-- Would need iff-intro (proof of P → Q) (proof of Q → P)
+  apply iff.intro,
+  -- ...
+end

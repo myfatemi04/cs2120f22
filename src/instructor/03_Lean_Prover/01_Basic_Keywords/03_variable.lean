@@ -33,5 +33,14 @@ a proof of Likes Mary Margo. We can see that Lean's type checker thinks so, too.
 def proof_mary_likes_margo : Likes Mary Margo := likes_mary_margo -- good proof, it typechecks
 def bad_proof : Likes Mary Margo := true.intro -- bad proof, type checker catches it!
 
+-- variable even: ℕ → Prop
 
+def even (n: ℕ) := n % 2 == 0
+#check even 5
+#check even 6
 
+example: even 6 :=
+begin
+	unfold even,
+	simp,
+end
