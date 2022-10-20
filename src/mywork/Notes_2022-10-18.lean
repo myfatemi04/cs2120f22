@@ -29,3 +29,22 @@ cases h1, contradiction,
 assume h1: A ∧ B,
 cases h1, contradiction,
 end
+
+example: ∀ (P Q: Prop), ¬(P ∨ Q) ↔ ¬P ∧ ¬Q :=
+begin
+assume P Q,
+apply iff.intro,
+-- Forward direction
+assume h1,
+apply and.intro,
+assume p,
+have nh1 := or.intro_left Q p, contradiction,
+assume q,
+have nh1 := or.intro_right P q, contradiction,
+
+assume h1,
+assume p_or_q,
+cases p_or_q,
+apply and.elim_left h1, assumption,
+apply and.elim_right h1, assumption,
+end
