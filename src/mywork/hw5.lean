@@ -385,12 +385,20 @@ any object of that type has the property
 objects of a certain type as a predicate
 taking objects of that type.
 -/
+
+-- Not going to write notes on this because it's very similar to
+-- what was done above
 example 
   (T : Type)
   (P : T → Prop) :
   ¬(∃ o, P o) → ∀ o, ¬(P o) :=
 begin
 assume h1,
+assume obj,
+cases classical.em (P obj),
+let h1c: ∃ o, P o := ⟨obj, h⟩,
+apply false.elim (h1 h1c),
+assumption,
 end
 
 
@@ -406,7 +414,24 @@ example
   (α : Type)
   (P : α → Prop)
   (Q : α → Prop): 
-  _ :=
+  (∃ (o), P o ∨ Q o) → (∃ (o), P o) ∨ (∃ (o), Q o) :=
 begin
+-- Assume that there exists some object with other
+-- property P or property Q
+assume h,
+-- We take the object and the knowledge that it has
+-- either the property P or Q
+cases h with o P_or_Q,
+-- We do a case analysis; it could be property P or
+-- property Q that is true, let's divide and conquer
+cases P_or_Q with Po Qo,
+-- The case where it's property P that's true
+let Po_exists: ∃ (o), P o := ⟨o, Po⟩,
+apply or.intro_left,
+exact Po_exists,
+-- The case where it's property Q that's true
+let Qo_exists: ∃ (o), Q o := ⟨o, Qo⟩,
+apply or.intro_right,
+exact Qo_exists,
 end
 
