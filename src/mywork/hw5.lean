@@ -26,7 +26,8 @@ natural number whose square is 144.
 
 example: ∃ (n: ℕ), n * n = 144 :=
 begin
-
+apply exists.intro,
+apply eq.refl (12 * 12),
 end
 
 
@@ -38,7 +39,11 @@ for string.append, the function for gluing two
 strings together into one.
 -/
 
-example : ∃ (s: string), (s ++ "!") == "I love logic!" := _
+example : ∃ (s: string), (s ++ "!") = "I love logic!" :=
+begin
+apply exists.intro,
+apply eq.refl ("I love logic" ++ "!"),
+end
 
 /- #1C.
 
@@ -49,8 +54,22 @@ takes just one witness as a time, so you will
 have to apply it more than once.
 -/
 
-example : _ :=
+-- We have two options here.
+
+example: ∃ (x y z: ℕ), x * x + y * y = z * z :=
 begin
+use 3,
+use 4,
+use 5,
+apply eq.refl,
+end
+
+example: ∃ (x y z: ℕ), x * x + y * y = z * z :=
+begin
+apply exists.intro 3,
+apply exists.intro 4,
+apply exists.intro 5,
+apply eq.refl,
 end
 
 /- #1D
@@ -59,17 +78,30 @@ three natural number arguments, x, y, and z,
 yielding the proposition that x*x + y*y = z*z.
 -/
 
-def pythag_triple (x y z : ℕ) := _
+def pythag_triple (x y z : ℕ) := x * x + y * y = z * z
 
 /- #1E
-State the propositionthat there exist x, y, z, 
+State the proposition that there exist x, y, z, 
 natural numbers, that satisfy the pythag_triple, 
 predicate, then prove it. (Use "example : ...")
 -/
 
-example : _  :=
+-- We have two options here.
+
+example: ∃ (x y z: ℕ), pythag_triple x y z :=
 begin
-_
+use 3,
+use 4,
+use 5,
+apply eq.refl,
+end
+
+example: ∃ (x y z: ℕ), pythag_triple x y z :=
+begin
+apply exists.intro 3,
+apply exists.intro 4,
+apply exists.intro 5,
+apply eq.refl,
 end
 
 /- #2A
@@ -82,7 +114,7 @@ n to be a multiple of m? There has to be some
 other number involved, right?
 -/
 
-def multiple_of (n m : ℕ) := ∃ (k), n = m * k  
+def multiple_of (n m : ℕ) := ∃ k, n = m * k  
 
 /- #2B
 
@@ -115,7 +147,7 @@ do polynomials and many other kinds of "math"
 objects as well.
 
 The ring tactic is used to put any expression 
-involing any rin" into a "normal" form. What 
+involing any ring into a "normal" form. What 
 "normal" means in this context is that if you 
 put two mathematically equivalent but different 
 expressions into normal form, then you get the 
@@ -140,9 +172,9 @@ in the English language proof below.
 
 example (n m k : ℕ) : n + (m + k) = (n + k) + m := 
 begin 
-ring 
+ring,
 end  
--- Enlish proof (it's short!): 
+-- Enlish proof (it's short!): We know this through basic algebra
 
 /-
 Whoa! It's so easy to prove addition associative? 
@@ -188,9 +220,15 @@ has to be. Also, be sure to use multiple_of in
 formally stating the proposition to be proved.
 -/
 
-example : _ :=
+example: ∀ (x: ℕ), multiple_of x 6 → multiple_of x 3 :=
 begin
-_
+assume x,
+unfold multiple_of,
+assume h1,
+cases h1 with w1 hw1,
+apply exists.intro (2 * w1) _,
+let equ: x = 3 * (2 * w1) := (calc x = 6 * w1: hw1 ... = 3 * (2 * w1): by ring),
+exact equ,
 end 
 
 
@@ -214,9 +252,28 @@ that you can replace equals by equals without
 changing the truth values of propositions. 
 -/
 
-example (n h k : ℕ) : _ :=
+example (n h k : ℕ):
+(multiple_of n h ∧ multiple_of h k) → multiple_of n k :=
 begin
-_
+unfold multiple_of,
+assume h1,
+-- https://leanprover.github.io/theorem_proving_in_lean/quantifiers_and_equality.html
+-- We extract the constants and predicates from n | h and h | k
+-- Then, we say that the constants multiply through associativity
+-- n = hc1
+-- h = kc2
+-- n = (kc2)c1
+-- n = k(c2c1)
+-- Then, we use exists.intro
+-- This "let" statement says, we are letting the values c1, nh and c2, hk be defined
+-- by h1.left and h1.right, and then plugging them into the next statement
+exact (let ⟨c1, nh⟩ := h1.left, ⟨c2, hk⟩ := h1.right in
+-- Construct a proof that n = c1 * c2 * h
+⟨c2 * c1, calc
+		n = h * c1: nh
+		... = k * c2 * c1: congr_arg _ hk
+		... = k * (c2 * c1): by ring⟩ -- or `by rw ←mul_assoc`
+),
 end
 
 
@@ -240,9 +297,11 @@ example
   (isCool : Person → Prop)
   (LogicMakesCool : ∀ (p), KnowsLogic p → isCool p)
   (SomeoneKnowsLogic : ∃ (p), KnowsLogic p) :
-  _ :=
+	∃ p, isCool p :=
 begin
-_
+apply exists.elim SomeoneKnowsLogic _,
+assume P P_knows_logic,
+apply exists.intro P ((LogicMakesCool P) P_knows_logic),
 end
 
 
@@ -252,13 +311,21 @@ Formally state and prove the proposition that if
 someone is not happy then not everyone is happy.
 -/
 
+-- We're proving this by contradiction
+-- We pick our unhappy person, insert it into our "for all" statement,
+-- and show that a contradiction is created when the conclusion of our
+-- "for all" statement is brought to the "this person being happy would
+-- cause the universe to explode" statement
 example 
   (Person : Type)
   (Happy : Person → Prop) :
-  _
+  (∃ (p: Person), ¬(Happy p)) → ¬(∀ (q: Person), Happy q)
   :=
 begin
-  _
+assume h1,
+cases h1 with unhappy_person unhappy_person_is_unhappy,
+assume h2,
+apply unhappy_person_is_unhappy (h2 unhappy_person),
 end
 
 /- #3C
@@ -281,8 +348,29 @@ your set of assumptions.
 example 
   (α : Type)
   (P : α → Prop) :
-  _ :=
+  (∀ (p: α), P p) ↔ (¬∃ (q: α), ¬(P q)) :=
 begin
+split,
+assume h1,
+assume h2,
+cases h2 with person person_is_unhappy,
+exact person_is_unhappy (h1 person),
+
+-- nobody is unhappy
+assume h1,
+-- now prove that all people are happy.
+assume happy_person,
+-- someone is either happy or they aren't.
+cases classical.em (P happy_person),
+-- if they are happy, then we rest our case
+assumption,
+-- if they are unhappy, we can show a contradiction
+apply false.elim,
+-- this unhappy person shows that there is at least
+-- one unhappy person, which directly contradicts
+-- our assumption
+let h1c: ∃ (q: α), ¬P q := ⟨happy_person, h⟩,
+apply h1 h1c,
 end 
 
 
@@ -300,13 +388,13 @@ taking objects of that type.
 example 
   (T : Type)
   (P : T → Prop) :
-  _ :=
+  ¬(∃ o, P o) → ∀ o, ¬(P o) :=
 begin
-_
+assume h1,
 end
 
 
-/- #3D
+/- #3E
 Formally state and prove the proposition
 that if there's an object with the property 
 of having property P or property Q then 
