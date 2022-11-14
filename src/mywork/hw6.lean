@@ -22,6 +22,8 @@ n > 0 (i.e., n = n' + 1 = (nat.succ n') for some n').
 -- Answer
 def isZero: ℕ → bool
 | 0 := tt
+-- matches anything where n = nat.succ n'
+-- 0 doesn't work because there's no value of n' that works here
 | (nat.succ n') := ff
 
 -- These test cases should pass except the last 
