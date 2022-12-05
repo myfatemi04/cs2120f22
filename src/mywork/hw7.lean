@@ -250,8 +250,8 @@ it have? Explain each answer enough to show you
 know why your answer is correct.
 
 -- reflexive: no, none of the natural numbers are linked to themselves
--- symmetric: yes, there is no case where r a b iff r b a
--- transitive: yes, there is no case where r a b and r b c implies r a c
+-- symmetric: yes, there is no case where r a b is true and r b a is not true
+-- transitive: yes, there is no case where r a b and r b c are true but r a c is not true
 -/
 
 
