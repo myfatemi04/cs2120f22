@@ -127,9 +127,9 @@ def factorial: ℕ → ℕ
 def factorial': ℕ → ℕ :=
 begin
 assume n,
-induction n with zero successor,
+induction n with current_n current_n_value,
 exact 1,
-exact (n + 1) * (factorial n)
+exact (current_n + 1) * (current_n_value)
 end
 
 #eval factorial' 5
