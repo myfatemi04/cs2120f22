@@ -108,6 +108,25 @@ to show that both directions are true independently of each other.
 Complete the following formal proof.
 -/
 
+theorem or_associative_true2 : or_associative :=
+begin
+unfold or_associative,
+assume P Q R,
+split,
+assume porqorr,
+cases porqorr with p qorr,
+exact (or.intro_left R (or.intro_left Q p)),
+cases qorr with q r,
+exact or.intro_left R (or.intro_right P q),
+apply or.intro_right, exact r,
+assume porqorr,
+cases porqorr with porq r,
+cases porq with p q,
+exact or.intro_left (Q ∨ R) p,
+exact or.intro_right P (or.intro_left R q),
+exact or.intro_right P (or.intro_right Q r),
+end
+
 theorem or_associative_true : or_associative :=
 begin
 unfold or_associative,

@@ -157,8 +157,7 @@ example : 25 ∈ perfectSquares :=
 begin
 unfold perfectSquares,
 unfold perfectSquare,
-apply exists.intro 5 _,
-apply rfl,
+exact exists.intro 5 rfl,
 end
 
 

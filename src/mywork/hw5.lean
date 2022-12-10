@@ -289,6 +289,11 @@ everything you need to formally state this
 conclusion (first hole/underscore). All 
 you then have to do is to fill in is the
 proof (second _).
+
+Exists elimination: If anything exists with a certain
+property, and we know that that property implies
+another preposition, then we can prove the other
+preposition.
 -/
 
 example 
@@ -302,6 +307,19 @@ begin
 apply exists.elim SomeoneKnowsLogic _,
 assume P P_knows_logic,
 apply exists.intro P ((LogicMakesCool P) P_knows_logic),
+end
+
+example 
+  (Person : Type)
+  (KnowsLogic : Person → Prop)
+  (isCool : Person → Prop)
+  (LogicMakesCool : ∀ (p), KnowsLogic p → isCool p)
+  (SomeoneKnowsLogic : ∃ (p), KnowsLogic p) :
+	∃ p, isCool p :=
+begin
+apply exists.elim SomeoneKnowsLogic _,
+assume P P_knows_logic,
+exact ⟨P, (LogicMakesCool P) P_knows_logic⟩,
 end
 
 
